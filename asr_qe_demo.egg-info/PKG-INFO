@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: asr-qe-demo
+Version: 0.1.0
+Summary: Always-on mic -> Silero VAD -> Whisper ASR -> QE -> LLM, side-by-side demo UI
+Requires-Python: >=3.10
+Requires-Dist: fastapi>=0.110
+Requires-Dist: uvicorn[standard]>=0.29
+Requires-Dist: numpy>=1.26
+Requires-Dist: onnxruntime>=1.17
+Requires-Dist: faster-whisper>=1.1
+Requires-Dist: anthropic>=1.0
+Requires-Dist: soundfile>=0.12
+Requires-Dist: websockets>=12

@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+app/__init__.py
+app/asr.py
+app/config.py
+app/llm.py
+app/main.py
+app/qe.py
+app/vad.py
+asr_qe_demo.egg-info/PKG-INFO
+asr_qe_demo.egg-info/SOURCES.txt
+asr_qe_demo.egg-info/dependency_links.txt
+asr_qe_demo.egg-info/requires.txt
+asr_qe_demo.egg-info/top_level.txt

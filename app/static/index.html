@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASR + QE demo</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">ASR&nbsp;+&nbsp;QE&nbsp;demo <span id="backend" class="muted"></span></div>
+  <div class="controls">
+    <button id="mic" class="primary">🎤 Start listening</button>
+    <label class="file">📂 Play audio file<input id="file" type="file" accept="audio/*"></label>
+    <button id="reset">Reset chat</button>
+  </div>
+  <div class="status">
+    <span id="state" class="pill idle">idle</span>
+    <div class="meter"><div id="level"></div></div>
+  </div>
+</header>
+
+<main>
+  <section class="panel" id="plain">
+    <h2>ASR → LLM <small>transcript only</small></h2>
+    <div class="chat"></div>
+  </section>
+  <section class="panel" id="qe">
+    <h2>ASR + QE → LLM <small>transcript + quality-estimation context</small></h2>
+    <div class="chat"></div>
+  </section>
+</main>
+
+<footer class="muted">
+  Pipeline: mic → Silero VAD → Whisper → QE → LLM. Word colour = ASR confidence
+  (<span class="w low">low</span> <span class="w mid">mid</span> ok); <span class="gap">⟂</span> = speech with no transcript.
+</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>
