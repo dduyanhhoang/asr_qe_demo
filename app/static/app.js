@@ -21,7 +21,10 @@ function sendPcm(f32) {
 }
 
 // ---- state pill -----------------------------------------------------------------------------------
-function setState(s) { stateEl.textContent = s; stateEl.className = "pill " + s; }
+function setState(s) {
+  stateEl.textContent = s; stateEl.className = "pill " + s;
+  micBtn.disabled = $("#reset").disabled = s === "disconnected";
+}
 function refreshState() {
   if (busy > 0) return;
   setState(listening || fileTimer ? "listening" : "idle");
@@ -42,6 +45,7 @@ function handle(m) {
       const t = { plain: {}, qe: {} };
       for (const side of ["plain", "qe"]) {
         t[side].user = bubble(side, "user pending", `… transcribing ${m.duration}s of speech`);
+        t[side].user.dataset.utt = m.id + 1; t[side].user.dataset.dur = m.duration;
       }
       turns.set(m.id, t); break;
     }
@@ -78,7 +82,7 @@ function scroll(side) { chats[side].scrollTop = chats[side].scrollHeight; }
 function renderQe(asr, qe) {
   const frag = [];
   const gapAfter = new Map(qe.gaps.map(g => [g.after, g]));
-  const gapMark = (g) => { const s = document.createElement("span"); s.className = "gap"; s.textContent = " ⟂ "; s.title = `possible missing words: ~${g.seconds}s of speech, no transcript`; return s; };
+  const gapMark = (g) => { const s = document.createElement("span"); s.className = "gap"; s.textContent = `${g.seconds}s`; s.title = `possible missing words: ~${g.seconds}s of speech, no transcript`; return s; };
   if (gapAfter.has(-1)) frag.push(gapMark(gapAfter.get(-1)));
   qe.words.forEach((w, i) => {
     const s = document.createElement("span"); s.className = "w " + w.level; s.textContent = w.text; s.title = `confidence ${w.prob}`;
@@ -86,13 +90,13 @@ function renderQe(asr, qe) {
     if (gapAfter.has(i)) frag.push(gapMark(gapAfter.get(i)));
   });
   if (!qe.words.length) frag.push(document.createTextNode(asr.text));
-  const badge = document.createElement("span"); badge.className = "badge " + qe.label; badge.textContent = `QE ${qe.score} ${qe.label}`;
-  frag.push(badge);
-  const meta = document.createElement("div"); meta.className = "meta";
+  const badge = document.createElement("span"); badge.className = "badge " + qe.label; badge.textContent = `QE ${qe.score.toFixed(2)} ${qe.label}`;
+  const meta = document.createElement("span"); meta.className = "meta";
   meta.textContent = `${qe.words.filter(w => w.level === "low").length} low-conf · ${qe.gaps.length} gap(s) · ${qe.notes.length} note(s) · lang ${asr.language}`;
+  const foot = document.createElement("div"); foot.className = "qe-foot"; foot.append(badge, meta);
   const det = document.createElement("details");
   det.innerHTML = `<summary>context sent to LLM</summary><pre></pre>`; $("pre", det).textContent = qe.context;
-  frag.push(meta, det);
+  frag.push(foot, det);
   return frag;
 }
 
@@ -107,14 +111,14 @@ async function startMic() {
   const mute = ctx.createGain(); mute.gain.value = 0;    // graph must reach the destination to be pulled; keep it silent
   src.connect(workletNode); workletNode.connect(mute); mute.connect(ctx.destination);
   await ctx.resume();
-  listening = true; micBtn.textContent = "⏹ Stop listening"; micBtn.classList.add("on"); refreshState();
+  listening = true; micBtn.classList.add("on"); micBtn.setAttribute("aria-pressed", "true"); refreshState();
 }
 function stopMic() {
   mediaStream?.getTracks().forEach(t => t.stop()); ctx?.close();
-  listening = false; micBtn.textContent = "🎤 Start listening"; micBtn.classList.remove("on");
+  listening = false; micBtn.classList.remove("on"); micBtn.setAttribute("aria-pressed", "false");
   send({ type: "flush" }); levelEl.style.width = "0"; refreshState();
 }
-micBtn.onclick = () => (listening ? stopMic() : startMic().catch(err => { alert("Microphone error: " + err.message + "\n(needs https or localhost)"); }));
+micBtn.onclick = () => (listening ? stopMic() : startMic().catch(err => handle({ type: "error", message: `Microphone error: ${err.message} (needs https or localhost)` })));
 
 // ---- file playback: decode -> 16 kHz mono -> stream in real time through the same VAD path ------------
 $("#file").onchange = async (e) => {

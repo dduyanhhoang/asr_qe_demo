@@ -4,37 +4,61 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ASR + QE demo</title>
+<meta name="color-scheme" content="dark">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<svg hidden aria-hidden="true">
+  <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect width="14" height="14" x="5" y="5" rx="2"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-waves" viewBox="0 0 24 24"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></symbol>
+</svg>
+
 <header>
-  <div class="brand">ASR&nbsp;+&nbsp;QE&nbsp;demo <span id="backend" class="muted"></span></div>
-  <div class="controls">
-    <button id="mic" class="primary">🎤 Start listening</button>
-    <label class="file">📂 Play audio file<input id="file" type="file" accept="audio/*"></label>
-    <button id="reset">Reset chat</button>
+  <div class="brand">
+    <svg class="mark"><use href="#i-waves"/></svg>
+    <div>
+      <h1>ASR + QE demo</h1>
+      <div id="backend" class="meta">connecting…</div>
+    </div>
   </div>
-  <div class="status">
+  <div class="controls">
+    <button id="mic" class="primary" aria-pressed="false">
+      <svg class="when-off"><use href="#i-mic"/></svg><span class="when-off">Start listening</span>
+      <svg class="when-on"><use href="#i-stop"/></svg><span class="when-on">Stop listening</span>
+    </button>
+    <label class="btn file"><svg><use href="#i-folder"/></svg>Play audio file<input id="file" type="file" accept="audio/*"></label>
+    <button id="reset"><svg><use href="#i-reset"/></svg>Reset chat</button>
+  </div>
+  <div class="status" role="status" aria-live="polite">
     <span id="state" class="pill idle">idle</span>
-    <div class="meter"><div id="level"></div></div>
+    <div class="meter" aria-hidden="true"><div id="level"></div></div>
   </div>
 </header>
 
 <main>
-  <section class="panel" id="plain">
-    <h2>ASR → LLM <small>transcript only</small></h2>
-    <div class="chat"></div>
+  <section class="panel" id="plain" aria-labelledby="plain-h">
+    <h2 id="plain-h">ASR → LLM <small>transcript only</small></h2>
+    <div class="chat" data-empty="Say something and the plain transcript is sent to the LLM as-is."></div>
   </section>
-  <section class="panel" id="qe">
-    <h2>ASR + QE → LLM <small>transcript + quality-estimation context</small></h2>
-    <div class="chat"></div>
+  <section class="panel" id="qe" aria-labelledby="qe-h">
+    <h2 id="qe-h">ASR + QE → LLM <small>transcript + quality-estimation context</small></h2>
+    <div class="chat" data-empty="Same transcript, plus which words are shaky and where speech went untranscribed."></div>
   </section>
 </main>
 
-<footer class="muted">
-  Pipeline: mic → Silero VAD → Whisper → QE → LLM. Word colour = ASR confidence
-  (<span class="w low">low</span> <span class="w mid">mid</span> ok); <span class="gap">⟂</span> = speech with no transcript.
+<footer>
+  <span class="pipeline">mic → Silero VAD → Whisper → QE → LLM</span>
+  <span class="legend">
+    Word colour = ASR confidence:
+    <span class="w low">low</span>
+    <span class="w mid">mid</span>
+    <span class="w ok">ok</span>
+    <span class="gap" title="speech with no transcript">0.6s</span> = speech with no transcript
+  </span>
 </footer>
 <script src="/static/app.js"></script>
 </body>

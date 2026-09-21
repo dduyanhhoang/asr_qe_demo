@@ -6,3 +6,5 @@ __pycache__/
 *.mp3
 *.flac
 !app/models/silero_vad.onnx
+.claude/skills/impeccable/scripts/bin/
+.claude/settings.local.json
